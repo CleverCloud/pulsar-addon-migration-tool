@@ -65,18 +65,31 @@ object Tool {
       val topicReaderSource = Source.fromIterator(() => ReaderIterator(topicReader).iterator)
 
       // create related producer
-      val topicSink = () => sinkClient.producer[String](ProducerConfig(topic))
+      val topicSink = sinkClient.producer[String](ProducerConfig(topic))
 
       // create topic's data sink from related producer
-      val topicReaderSink = sink(topicSink)
+      val topicReaderSink = sink(() => topicSink)
 
       val replicationStream = topicReaderSource.map { consumerMessage =>
         ProducerMessage[String](consumerMessage.value)
       }.runWith(topicReaderSink)
 
-      replicationStream.map { _ => println(s"$topic has been replicated") }.recover(e =>
-        println(s"$topic FAILED its replication", e)
-      )
+      // manage replication stream termination
+      replicationStream.map { _ =>
+        for {
+          _ <- topicReader.closeAsync
+          _ <- topicSink.closeAsync
+        } yield {
+          println(s"$topic has been replicated")
+        }
+      }.recover { e =>
+        for {
+          _ <- topicReader.closeAsync
+          _ <- topicSink.closeAsync
+        } yield {
+          println(s"$topic FAILED its replication", e)
+        }
+      }
     }
   }
 
