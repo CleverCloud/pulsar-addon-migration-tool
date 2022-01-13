@@ -74,11 +74,11 @@ object Tool {
       val topicSink = sinkClient.producer[String](ProducerConfig(topic))
 
       // create topic's data sink from related producer
-      val topicReaderSink = sink(() => topicSink)
+      val topicProducerSink = sink(() => topicSink)
 
       val replicationStream = topicReaderSource.map { consumerMessage =>
         ProducerMessage[String](consumerMessage.value)
-      }.runWith(topicReaderSink)
+      }.runWith(topicProducerSink)
 
       // manage replication stream termination
       replicationStream.map { _ =>
