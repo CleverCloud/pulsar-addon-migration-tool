@@ -31,7 +31,11 @@ object Tool {
     persistent://<tenant>/<namespace>/<topic>
     ...
      */
-    run("/tmp/topics_list.txt")
+    val fileName = "/tmp/topics_list.txt"
+    println(s"Will run with topics in file $fileName")
+    run(fileName)
+
+    System.exit(0)
   }
 
   // the source addon pulsar client configuration
@@ -53,6 +57,8 @@ object Tool {
   def run(fileName: String): Unit = {
     // for each topic in file
     topicsSource(fileName).map { topic =>
+      println(s"replicating $topic")
+
       // create the related reader
       val topicReader = sourceClient.reader[String](
         ReaderConfig(
