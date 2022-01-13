@@ -90,7 +90,7 @@ object Tool {
           println(s"$topic FAILED its replication", e)
         }
       }
-    }
+    }.run()
   }
 
   def topicsSource(fileName: String): Source[Topic, Future[IOResult]] = {
