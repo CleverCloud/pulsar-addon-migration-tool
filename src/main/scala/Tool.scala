@@ -31,7 +31,7 @@ object Tool {
     persistent://<tenant>/<namespace>/<topic>
     ...
      */
-    run("mytopicfile.txt")
+    run("/tmp/topics_list.txt")
   }
 
   // the source addon pulsar client configuration
