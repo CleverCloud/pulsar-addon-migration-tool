@@ -14,7 +14,7 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 
 object Tool {
   implicit val system: ActorSystem = ActorSystem.create("QuickStart")
-  implicit val ex: ExecutionContextExecutor = system.dispatchers.lookup("my-dispatcher")
+  implicit val ex: ExecutionContextExecutor = system.dispatchers.lookup("migration-dispatcher")
 
   implicit val schema: Schema[String] = Schema.STRING
 
