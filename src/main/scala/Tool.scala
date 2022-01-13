@@ -5,9 +5,7 @@ import akka.stream.IOResult
 import akka.stream.scaladsl._
 import akka.util.ByteString
 import com.sksamuel.pulsar4s.akka.streams.sink
-import com.sksamuel.pulsar4s.circe.circeSchema
 import com.sksamuel.pulsar4s._
-import io.circe.generic.auto._
 import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.impl.auth.AuthenticationToken
 
@@ -18,11 +16,7 @@ object Tool {
   implicit val system: ActorSystem = ActorSystem.create("QuickStart")
   implicit val ex: ExecutionContextExecutor = system.dispatchers.lookup("my-dispatcher")
 
-  // the data model parsed as json and sent as json
-  case class Data(
-      fieldA: String,
-      fieldB: Int)
-  implicit val schema: Schema[Data] = circeSchema[Data]
+  implicit val schema: Schema[String] = Schema.STRING
 
   def main(args: Array[String]): Unit = {
     // the topics file
@@ -60,7 +54,7 @@ object Tool {
     // for each topic in file
     topicsSource(fileName).map { topic =>
       // create the related reader
-      val topicReader = sourceClient.reader[Data](
+      val topicReader = sourceClient.reader[String](
         ReaderConfig(
           topic = topic,
           startMessage = Message(MessageId.earliest)
@@ -71,13 +65,14 @@ object Tool {
       val topicReaderSource = Source.fromIterator(() => ReaderIterator(topicReader).iterator)
 
       // create related producer
-      val topicSink = () => sinkClient.producer[Data](ProducerConfig(topic))
+      val topicSink = () => sinkClient.producer[String](ProducerConfig(topic))
 
       // create topic's data sink from related producer
       val topicReaderSink = sink(topicSink)
 
-      val replicationStream = topicReaderSource.map { consumerMessage => ProducerMessage[Data](consumerMessage.value) }
-        .runWith(topicReaderSink)
+      val replicationStream = topicReaderSource.map { consumerMessage =>
+        ProducerMessage[String](consumerMessage.value)
+      }.runWith(topicReaderSink)
 
       replicationStream.map { _ => println(s"$topic has been replicated") }.recover(e =>
         println(s"$topic FAILED its replication", e)
@@ -95,11 +90,11 @@ object Tool {
   }
 
   // make reader an iterator for convenience
-  case class ReaderIterator[Data](reader: Reader[Data]) extends Iterable[ConsumerMessage[Data]] {
+  case class ReaderIterator[String](reader: Reader[String]) extends Iterable[ConsumerMessage[String]] {
 
-    override def iterator: Iterator[ConsumerMessage[Data]] = new Iterator[ConsumerMessage[Data]] {
+    override def iterator: Iterator[ConsumerMessage[String]] = new Iterator[ConsumerMessage[String]] {
       override def hasNext: Boolean = reader.hasMessageAvailable
-      override def next(): ConsumerMessage[Data] = reader.next
+      override def next(): ConsumerMessage[String] = reader.next
     }
   }
 }
