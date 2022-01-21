@@ -10,7 +10,8 @@ import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.impl.auth.AuthenticationToken
 
 import java.nio.file.Paths
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
 
 object Tool {
   implicit val system: ActorSystem = ActorSystem.create("QuickStart")
@@ -33,9 +34,9 @@ object Tool {
      */
     val fileName = "/tmp/topics_list.txt"
     println(s"Will run with topics in file $fileName")
-    run(fileName)
-
-    System.exit(0)
+    val resultatF: Future[_] = run(fileName)
+    Await.result(resultatF, Duration.Inf)
+    println("replication over")
   }
 
   // the source addon pulsar client configuration
@@ -54,7 +55,7 @@ object Tool {
     )
   )
 
-  def run(fileName: String): Unit = {
+  def run(fileName: String): Future[_] = {
     // for each topic in file
     topicsSource(fileName).map { topic =>
       println(s"replicating $topic")
