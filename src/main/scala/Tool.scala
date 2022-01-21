@@ -78,7 +78,12 @@ object Tool {
       val topicProducerSink = sink(() => topicSink)
 
       val replicationStream = topicReaderSource.map { consumerMessage =>
-        ProducerMessage[String](consumerMessage.value)
+        DefaultProducerMessage[String](
+          key = consumerMessage.key,
+          props = consumerMessage.props,
+          value = consumerMessage.value,
+          eventTime = Some(consumerMessage.eventTime)
+        )
       }.runWith(topicProducerSink)
 
       // manage replication stream termination
