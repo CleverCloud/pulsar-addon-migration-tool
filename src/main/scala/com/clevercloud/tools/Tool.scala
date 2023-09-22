@@ -4,14 +4,14 @@ import akka.actor.ActorSystem
 import akka.stream.IOResult
 import akka.stream.scaladsl._
 import akka.util.ByteString
-import com.sksamuel.pulsar4s.akka.streams.sink
 import com.sksamuel.pulsar4s._
+import com.sksamuel.pulsar4s.akka.streams.sink
 import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.impl.auth.AuthenticationToken
 
 import java.nio.file.Paths
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContextExecutor, Future }
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
 object Tool {
   implicit val system: ActorSystem = ActorSystem.create("QuickStart")
