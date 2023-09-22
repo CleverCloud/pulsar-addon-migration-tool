@@ -42,7 +42,7 @@ object Tool {
   // the source addon pulsar client configuration
   val sourceClient: PulsarClient = PulsarClient(
     PulsarClientConfig(
-      serviceUrl = "pulsar+ssl://c1-pulsar-clevercloud-customers.services.clever-cloud.com:2002",
+      serviceUrl = "pulsar+ssl://c2-pulsar-clevercloud-customers.services.clever-cloud.com:2002",
       authentication = Some(new AuthenticationToken("<ADDON_PULSAR_TOKEN_SOURCE>"))
     )
   )
@@ -50,7 +50,7 @@ object Tool {
   // the sink addon pulsar client configuration
   val sinkClient: PulsarClient = PulsarClient(
     PulsarClientConfig(
-      serviceUrl = "pulsar+ssl://c2-pulsar-clevercloud-customers.services.clever-cloud.com:2002",
+      serviceUrl = "pulsar+ssl://materiamq.eu-fr-1.services.clever-cloud.com:6651",
       authentication = Some(new AuthenticationToken("<ADDON_PULSAR_TOKEN_SINK>"))
     )
   )
