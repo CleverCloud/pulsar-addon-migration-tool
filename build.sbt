@@ -1,14 +1,12 @@
-lazy val akkaVersion = "2.6.17"
-lazy val circeVersion = "0.14.1"
-lazy val pulsar4sVersion = "2.8.1"
+lazy val akkaVersion = "2.6.20"
+lazy val circeVersion = "0.14.3"
+lazy val pulsar4sVersion = "2.9.0"
 
 name := "pulsar-addon-migration-tool"
 
-version := "0.1"
+version := "0.2"
 
-scalaVersion := "2.13.8"
-
-idePackagePrefix := Some("com.clevercloud.tools")
+scalaVersion := "2.13.10"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
