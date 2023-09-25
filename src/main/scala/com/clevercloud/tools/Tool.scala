@@ -72,7 +72,8 @@ object Tool {
       val topicReaderSource = Source.fromIterator(() => ReaderIterator(topicReader).iterator)
 
       // create related producer
-      val topicSink = sinkClient.producer[String](ProducerConfig(topic))
+      val topicNameOnSink: Topic = computeSinkTopic("<ADDON_PULSAR_TENANT_SINK>", "<ADDON_PULSAR_NAMESPACE_SINK>", topic)
+      val topicSink = sinkClient.producer[String](ProducerConfig(topicNameOnSink))
 
       // create topic's data sink from related producer
       val topicProducerSink = sink(() => topicSink)
@@ -112,6 +113,11 @@ object Tool {
       .fromPath(file)
       .via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 2048, allowTruncation = false).map(_.utf8String))
       .map(Topic)
+  }
+
+  def computeSinkTopic(tenant: String, namespace: String, topic: Topic): Topic = {
+    val topicPart: String = topic.name.split("/").last
+    Topic(s"$tenant/$namespace/$topicPart")
   }
 
   // make reader an iterator for convenience
