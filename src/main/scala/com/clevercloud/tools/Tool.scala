@@ -9,7 +9,7 @@ import com.sksamuel.pulsar4s.akka.streams.sink
 import org.apache.pulsar.client.api.Schema
 import org.apache.pulsar.client.impl.auth.AuthenticationToken
 
-import java.nio.file.Paths
+import java.nio.file.{Paths, StandardOpenOption}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 
@@ -43,17 +43,19 @@ object Tool {
   val sourceClient: PulsarClient = PulsarClient(
     PulsarClientConfig(
       serviceUrl = "pulsar+ssl://c2-pulsar-clevercloud-customers.services.clever-cloud.com:2002",
-      authentication = Some(new AuthenticationToken("<ADDON_PULSAR_TOKEN_SOURCE>"))
+      authentication = Some(new AuthenticationToken("TOKEN"))
     )
   )
 
   // the sink addon pulsar client configuration
+  /*
   val sinkClient: PulsarClient = PulsarClient(
     PulsarClientConfig(
       serviceUrl = "pulsar+ssl://materiamq.eu-fr-1.services.clever-cloud.com:6651",
       authentication = Some(new AuthenticationToken("<ADDON_PULSAR_TOKEN_SINK>"))
     )
   )
+   */
 
   def run(fileName: String): Future[_] = {
     // for each topic in file
@@ -72,12 +74,17 @@ object Tool {
       val topicReaderSource = Source.fromIterator(() => ReaderIterator(topicReader).iterator)
 
       // create related producer
-      val topicNameOnSink: Topic = computeSinkTopic("<ADDON_PULSAR_TENANT_SINK>", "<ADDON_PULSAR_NAMESPACE_SINK>", topic)
-      val topicSink = sinkClient.producer[String](ProducerConfig(topicNameOnSink))
+      //val topicNameOnSink: Topic = computeSinkTopic("<ADDON_PULSAR_TENANT_SINK>", "<ADDON_PULSAR_NAMESPACE_SINK>", topic)
+      //val topicSink = sinkClient.producer[String](ProducerConfig(topicNameOnSink))
 
       // create topic's data sink from related producer
-      val topicProducerSink = sink(() => topicSink)
+      //val topicProducerSink = sink(() => topicSink)
+      val filePath = Paths.get(s"/tmp/${topic.name.split("/").last}.txt")
+      val fileSink = FileIO.toPath(filePath, Set(StandardOpenOption.CREATE, StandardOpenOption.WRITE))
 
+      val replicationStream = topicReaderSource.map(s => ByteString(s.value + "\n")).runWith(fileSink)
+
+      /*
       val replicationStream = topicReaderSource.map { consumerMessage =>
         DefaultProducerMessage[String](
           key = consumerMessage.key,
@@ -86,19 +93,20 @@ object Tool {
           eventTime = Some(consumerMessage.eventTime)
         )
       }.runWith(topicProducerSink)
+      */
 
       // manage replication stream termination
       replicationStream.map { _ =>
         for {
           _ <- topicReader.closeAsync
-          _ <- topicSink.closeAsync
+          //_ <- topicSink.closeAsync
         } yield {
           println(s"$topic has been replicated")
         }
       }.recover { e =>
         for {
           _ <- topicReader.closeAsync
-          _ <- topicSink.closeAsync
+          //_ <- topicSink.closeAsync
         } yield {
           println(s"$topic FAILED its replication", e)
         }
